@@ -1,8 +1,8 @@
 import streamlit as st
-import openai
+from openai import OpenAI
 
 # --- Configuration ---
-openai.api_key = st.secrets["openai_api_key"]
+client = OpenAI(api_key=st.secrets["openai_api_key"])
 
 # --- App Title ---
 st.title("あなたの死角はなんだ？！")
@@ -97,8 +97,8 @@ prompt = build_prompt()
 
 # --- Call OpenAI API ---
 with st.spinner('AIが死角を分析中...'):
-    res = openai.ChatCompletion.create(
-        model="gpt-4o-mini",
+    res = client.chat.completions.create(
+        model="gpt-4o",
         messages=[
             {"role": "system", "content": "あなたはプロの心理カウンセラーです。ユーザーの回答から独自の死角を抽出し、Assumptions, Blind Spots, Actionの形式で回答してください。"},
             {"role": "user", "content": prompt}
