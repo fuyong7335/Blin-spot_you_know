@@ -7,7 +7,7 @@ client = OpenAI(api_key=st.secrets["openai_api_key"])
 
 # --- タイトルと説明 ---
 st.set_page_config(page_title="アナタの知らないあなたを診断", layout="centered")
-st.title("アナタの知らないあなたを診断・本音版")
+st.title("アナタの知らないあなたを診断")
 st.markdown("あなたの“無意識の声”に、ちょっと耳をすませてみませんか？")
 
 # --- 質問項目 ---
