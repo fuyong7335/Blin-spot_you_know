@@ -66,7 +66,7 @@ Q5：{q5}
                 {"role": "user", "content": prompt}
             ],
             temperature=0.9,
-            max_tokens=150
+            max_tokens=500
         )
 
     result = response.choices[0].message.content
