@@ -1,39 +1,35 @@
 import streamlit as st
+import random
 from openai import OpenAI
 
-# --- OpenAI API Key ---
+# --- APIキーの設定（streamlit secretsを利用） ---
 client = OpenAI(api_key=st.secrets["openai_api_key"])
 
-# --- App Title ---
-st.title("アナタの知らないあなた 診断アプリ")
-st.markdown("### 心のひっかかりから、あなたの死角をAIが優しく見つめます。")
+# --- タイトルと説明 ---
+st.set_page_config(page_title="アナタの知らないあなたを診断・本音版", layout="centered")
+st.title("アナタの知らないあなたを診断・本音版")
+st.markdown("あなたの“無意識の声”に、ちょっと耳をすませてみませんか？")
 
-# --- Step 1: 自由記述 ---
-st.header("🌀 ステップ1：深層にアクセスする自由記述")
-q1 = st.text_input("Q1：最近、誰かに言われた一言で『なぜか心にひっかかった』言葉はありますか？")
-q2 = st.text_input("Q2：その言葉を聞いた時、どんな気持ちが一瞬よぎりましたか？")
-q3 = st.text_input("Q3：どんな場面だったか、ざっくりでも思い出せますか？")
+# --- 質問項目 ---
+q1 = st.text_input("Q1：最近、誰かに言われた一言で「なぜか心にひっかかった」言葉はありますか？\n（例：「真面目だね」「冷たいところもあるよね」）")
+q2 = st.text_input("Q2：その言葉を聞いた時、どんな気持ちが一瞬よぎりましたか？\n（例：「え、そんなつもりないのに…」「ちょっとドキッとした」）")
+q3 = st.text_input("Q3：どんな場面だったか、ざっくりでも思い出せますか？\n（例：「会議のあと」「SNSでやり取り中」）")
 
-# --- Step 2: 選択式補足 ---
-st.header("🧭 ステップ2：反応傾向の補足")
-q4 = st.multiselect("Q4：あなたの反応に近いものを選んでください（複数可）", [
-    "言われた相手にムッとした",
-    "自分を否定された気がした",
-    "少し落ち込んだ",
-    "なんとなく心に引っかかっている",
-    "『確かにそうかも』と思った",
-    "特に気にしていない"
-])
+st.markdown("---")
+st.markdown("### 傾向把握（感情の動き）")
+q4 = st.text_input("Q4：その言葉の『何が』引っかかったのだと思いますか？\n（例：「自分ではそう思っていなかった」「図星を突かれた気がした」）")
+q5 = st.text_input("Q5：その瞬間、心の中でどんな“つぶやき”がありましたか？\n（例：「それは違うって」「やっぱりそう思われてたか…」）")
 
-# --- Step 3: 自己イメージとギャップ ---
-st.header("🪞 ステップ3：現在の自己イメージ")
-q5 = st.text_input("Q5：あなたは自分をどんな人だと“思われたい”ですか？（3つまで自由入力）")
-q6 = st.radio("Q6：その理想と、言われた言葉とのあいだにギャップは感じましたか？", ["はい", "いいえ", "少しある"])
+st.markdown("---")
+st.markdown("### 自己イメージとギャップ")
+ideal1 = st.text_input("Q6：あなたはどんな人だと“思われたい”ですか？（1つ目）")
+ideal2 = st.text_input("（2つ目）")
+ideal3 = st.text_input("（3つ目）")
+q7 = st.radio("Q7：その理想と、言われた言葉とのあいだにギャップは感じましたか？", ["はい", "いいえ", "少しある"])
 
-# --- Submit ---
+# --- 診断実行ボタン ---
 if st.button("診断する"):
-    with st.spinner("AIがあなたの死角を分析中です..."):
-        prompt = f"""
+    prompt = f"""
 あなたは人の心の奥深くを見つめる心理学者です。
 次に紹介するユーザーの回答を読んで、その人自身も気づいていないかもしれない一面について、コメントをしてください。
 思わず心に響くような、読み手が「深読み」したくなる内容だとうれしいです。
@@ -44,23 +40,35 @@ if st.button("診断する"):
 
 
 
----
-Q1: {q1}
-Q2: {q2}
-Q3: {q3}
-Q4: {', '.join(q4)}
-Q5: {q5}
-Q6: {q6}
+【記述内容】
+Q1：{q1}
+Q2：{q2}
+Q3：{q3}
+Q4：{q4}
+Q5：{q5}
+理想の人物像：{ideal1}, {ideal2}, {ideal3}
+ギャップの有無：{q7}
 """
-        res = client.chat.completions.create(
+
+    with st.spinner("診断中..."):
+        response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": "あなたは共感力の高い心理カウンセラーで、思いやりのあるフィードバックを提供します。"},
+                {"role": "system", "content": "あなたは優秀な心理カウンセラーで、ユーザーの変化の芽を大切に扱う人物です。"},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.8,
-            max_tokens=600
+            temperature=0.9,
+            max_tokens=150
         )
-        st.subheader("🧠 AI診断結果")
-        st.write(res.choices[0].message.content)
-        st.info("この診断はあなた自身を責めるためのものではありません。あなたの中にある思いが、静かに姿を見せてくれただけなのです🌿")
+
+    result = response.choices[0].message.content
+    st.markdown("---")
+    st.subheader("診断結果")
+    st.markdown(f"🌀 {result}")
+    st.markdown("---")
+    final_comments = [
+        "いかがでしたか？アナタの自覚していない部分の先端がみえましたか？",
+        "あなたの中に、まだ言葉になっていない願いがあるのかもしれませんね。",
+        "気づいた“ひとこと”が、明日の行動を変えるヒントになるかもしれません。"
+    ]
+    st.caption(random.choice(final_comments))
